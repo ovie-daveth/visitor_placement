@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tag, Plus, Edit, Trash2, User } from "lucide-react"
-import CustomHeader from "@/components/custom_header"
+import Layout from "../layout"
 
 export default function TagManagement() {
   const [newTag, setNewTag] = useState({ name: "", color: "blue", type: "visitor" })
@@ -66,8 +66,7 @@ export default function TagManagement() {
   }
 
   return (
-    <div className="min-h-screen max-w-7xl mx-auto">
-     <CustomHeader title={""} subTitle={""} page={"tag"} />
+    <Layout >
 
       <div className=" px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -230,6 +229,6 @@ export default function TagManagement() {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }

@@ -20,9 +20,9 @@ export default function Home() {
         <p className="text-lg text-gray-600 mb-8 text-center animate-fade-in delay-200">
           Manage your visitors efficiently and securely.
         </p>
-        <Link to="/dashboard">
+        <Link to="/check-in" className="animate-fade-in delay-300">
           <button className="px-8 py-3 bg-blue-700 text-white rounded-lg shadow-lg hover:bg-blue-800 transition-all duration-200 animate-fade-in delay-300">
-            Go to Dashboard
+            Get Started
           </button>
         </Link>
       </div>

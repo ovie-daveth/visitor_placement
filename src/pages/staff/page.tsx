@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Search, User, Mail, Phone, Building } from "lucide-react"
-import CustomHeader from "@/components/custom_header"
+import Layout from "../layout"
 
 export default function StaffDirectory() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -93,10 +93,8 @@ export default function StaffDirectory() {
   }
 
   return (
-    <div className="min-h-screen max-w-7xl mx-auto ">
-     <CustomHeader title={""} subTitle={""} page={"staff"} />
-
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
+    <Layout >
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
           <div className="flex gap-4">
             <div className="relative flex-1">
@@ -181,6 +179,6 @@ export default function StaffDirectory() {
           )}
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }

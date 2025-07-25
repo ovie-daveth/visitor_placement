@@ -9,10 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Camera, Upload, X } from "lucide-react"
+import { Camera, X } from "lucide-react"
 import {Link} from "react-router-dom"
 import apiClient from "@/lib/apiConfig"
-import CustomHeader from "@/components/custom_header"
+import Layout from "../layout"
 
 export default function CheckIn() {
   const [formData, setFormData] = useState({
@@ -21,7 +21,6 @@ export default function CheckIn() {
     phone: "",
     email: "",
     base64Image: "",
-    staffEmail: "",
     staffName: "",
     purpose: "",
     status: "Checked In",
@@ -58,16 +57,16 @@ const handleSubmit = async (e: React.FormEvent) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, base64Image: reader.result as string }))
-      }
-      reader.readAsDataURL(file)
-    }
-  }
+  // const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0]
+  //   if (file) {
+  //     const reader = new FileReader()
+  //     reader.onloadend = () => {
+  //       setFormData((prev) => ({ ...prev, base64Image: reader.result as string }))
+  //     }
+  //     reader.readAsDataURL(file)
+  //   }
+  // }
 
   const startCamera = () => {
     setIsCameraActive(true)
@@ -88,16 +87,16 @@ const handleSubmit = async (e: React.FormEvent) => {
   }, [webcamRef])
 
   return (
-    <div className="max-w-7xl mx-auto min-h-screen">
-       <CustomHeader title="Visitor Check-in" subTitle="Register a new visitor" page="checkin" />
+    <Layout>
+       <div className="text-left">
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Visitor Information</CardTitle>
-                  <CardDescription>Please fill in the visitor details</CardDescription>
+                  <CardTitle className="lg:text-2xl text-lg font-bold">Visitor Information</CardTitle>
+                  <CardDescription className="">Please fill in the visitor details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,7 +162,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                       </SelectContent>
                     </Select>
                   </div>
-
+              
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="staffName">Staff Name *</Label>
@@ -175,20 +174,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                         required
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="staffEmail">Staff Email *</Label>
-                      <Input
-                        id="staffEmail"
-                        type="email"
-                        value={formData.staffEmail}
-                        onChange={(e) => handleInputChange("staffEmail", e.target.value)}
-                        placeholder="Enter staff email"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
+                   <div className="space-y-2">
                     <Label htmlFor="belongings">Belongings</Label>
                     <Input
                       id="belongings"
@@ -198,6 +184,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                     />
                   </div>
 
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="comments">Additional Comments</Label>
                     <Textarea
@@ -215,8 +202,8 @@ const handleSubmit = async (e: React.FormEvent) => {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Visitor Photo</CardTitle>
-                  <CardDescription>Take or upload a photo</CardDescription>
+                  <CardTitle className="lg:text-2xl text-lg font-bold">Visitor Photo</CardTitle>
+                  <CardDescription>Take a photo</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
@@ -236,7 +223,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                         <Camera className="w-4 h-4 mr-2" />
                         Start Camera
                       </Button>
-                      <Button
+                      {/* <Button
                         type="button"
                         variant="outline"
                         className="w-full bg-transparent"
@@ -251,7 +238,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                         accept="image/*"
                         className="hidden"
                         onChange={handleImageUpload}
-                      />
+                      /> */}
                     </div>
                   </div>
                 </CardContent>
@@ -289,7 +276,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   <CardTitle>Check-in Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button type="submit" className="w-full" size="lg">
+                  <Button type="submit" className="w-full bg-red-600" size="lg">
                    {
                     isLoading ? "Checking in..." : "Complete Check-in" 
                    }
@@ -308,6 +295,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
         </form>
       </div>
-    </div>
+       </div>
+    </Layout>
   )
 }

@@ -1,76 +1,115 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Search, Check, X, Clock, User, Building, Phone, Mail } from "lucide-react"
-import CustomHeader from "@/components/custom_header"
+import apiClient from "@/lib/apiConfig"
+import type { Visit } from "@/interfaces/visitors"
+import { toast } from "sonner"
+import Layout from "../layout"
 
 export default function PendingVisits() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [pendingVisits, setPendingVisits] = useState<Visit[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const pendingVisits = [
-    {
-      id: "V001",
-      name: "John Smith",
-      email: "john.smith@techcorp.com",
-      phone: "+1 (555) 123-4567",
-      company: "Tech Corp",
-      purpose: "Business Meeting",
-      hostName: "Sarah Johnson",
-      checkInTime: "10:30 AM",
-      expectedDuration: "2 hours",
-      notes: "Meeting about new project proposal",
-    },
-    {
-      id: "V004",
-      name: "Emily Davis",
-      email: "emily.davis@consulting.com",
-      phone: "+1 (555) 987-6543",
-      company: "Consulting LLC",
-      purpose: "Consultation",
-      hostName: "Mike Wilson",
-      checkInTime: "10:45 AM",
-      expectedDuration: "1 hour",
-      notes: "Strategic planning consultation",
-    },
-    {
-      id: "V007",
-      name: "Robert Brown",
-      email: "robert.brown@design.com",
-      phone: "+1 (555) 456-7890",
-      company: "Design Studio",
-      purpose: "Job Interview",
-      hostName: "Lisa Chen",
-      checkInTime: "11:15 AM",
-      expectedDuration: "1 hour",
-      notes: "Senior Designer position interview",
-    },
-  ]
+  // const pendingVisits = [
+  //   {
+  //     id: "V001",
+  //     name: "John Smith",
+  //     email: "john.smith@techcorp.com",
+  //     phone: "+1 (555) 123-4567",
+  //     company: "Tech Corp",
+  //     purpose: "Business Meeting",
+  //     hostName: "Sarah Johnson",
+  //     checkInTime: "10:30 AM",
+  //     expectedDuration: "2 hours",
+  //     notes: "Meeting about new project proposal",
+  //   },
+  //   {
+  //     id: "V004",
+  //     name: "Emily Davis",
+  //     email: "emily.davis@consulting.com",
+  //     phone: "+1 (555) 987-6543",
+  //     company: "Consulting LLC",
+  //     purpose: "Consultation",
+  //     hostName: "Mike Wilson",
+  //     checkInTime: "10:45 AM",
+  //     expectedDuration: "1 hour",
+  //     notes: "Strategic planning consultation",
+  //   },
+  //   {
+  //     id: "V007",
+  //     name: "Robert Brown",
+  //     email: "robert.brown@design.com",
+  //     phone: "+1 (555) 456-7890",
+  //     company: "Design Studio",
+  //     purpose: "Job Interview",
+  //     hostName: "Lisa Chen",
+  //     checkInTime: "11:15 AM",
+  //     expectedDuration: "1 hour",
+  //     notes: "Senior Designer position interview",
+  //   },
+  // ]
+
+
+  useEffect(() => {
+    // Simulate fetching pending visits from an API
+    const fetchPendingVisits = async () => {
+      setIsLoading(true)
+      try {
+        const response  = await apiClient.get("/visit/pending")
+      if(response.status === 200 || response.status === 201) {
+        console.log("Pending visits fetched successfully:", response.data)
+        setPendingVisits(response.data)
+        setIsLoading(false)
+      } else {
+        console.error("Failed to fetch pending visits:", response.statusText)
+        setIsLoading(false)
+      }
+      } catch (error) {
+        setIsLoading(false)
+        console.error("Error fetching pending visits:", error)
+        toast.error("Failed to fetch pending visits")
+      }
+    }
+    fetchPendingVisits()
+  }, [])
 
   const handleApprove = async (visitId: string) => {
-    // Simulate API call to POST /api/visit/approve/{visitId}
-    console.log("Approving visit:", visitId)
+   const response = await apiClient.post(`/visit/approve/${visitId}`)
+    if(response.status === 200 || response.status === 201) {
+      console.log("Visit approved successfully:", response.data)
+      toast.success("Visit approved successfully")
+      // Optionally, you can refetch the pending visits or update the state
+      setPendingVisits((prevVisits) => prevVisits.filter(visit => visit.id !== visitId))
+    } else {
+      console.error("Failed to approve visit:", response.statusText)
+    }
   }
 
   const handleReject = async (visitId: string) => {
-    // Simulate API call to POST /api/visit/reject/{visitId}
-    console.log("Rejecting visit:", visitId)
+    const response = await apiClient.post(`/visit/reject/${visitId}`)
+    if(response.status === 200 || response.status === 201) {
+      console.log("Visit rejected successfully:", response.data)
+      toast.success("Visit rejected successfully")
+      // Optionally, you can refetch the pending visits or update the state
+      setPendingVisits((prevVisits) => prevVisits.filter(visit => visit.id !== visitId))
+    } else {
+      console.error("Failed to reject visit:", response.statusText)
+    }
   }
 
   const filteredVisits = pendingVisits.filter(
     (visit) =>
-      visit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      visit.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      visit.hostName.toLowerCase().includes(searchTerm.toLowerCase()),
+      visit.visitor?.fullName.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (
-    <div className="min-h-screen max-w-7xl mx-auto ">
-      
-    <CustomHeader title="" subTitle="" page="pending" />
+    <Layout >
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <div className="relative">
@@ -85,6 +124,13 @@ export default function PendingVisits() {
         </div>
 
         <div className="space-y-6">
+          {
+            isLoading && (
+              <div className="flex items-center justify-center h-64">
+                <Clock className="animate-spin w-8 h-8 text-gray-500" />
+              </div>
+            )
+          }
           {filteredVisits.map((visit) => (
             <Card key={visit.id} className="hover:shadow-md transition-shadow text-left">
               <CardContent className="p-6">
@@ -95,8 +141,8 @@ export default function PendingVisits() {
                         <User className="w-6 h-6 text-orange-600" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900">{visit.name}</h3>
-                        <p className="text-gray-600">{visit.company}</p>
+                        <h3 className="text-xl font-semibold text-gray-900">{visit.visitor?.fullName}</h3>
+                        <p className="text-gray-600">Tag: {visit.tagNumber}</p>
                       </div>
                       <Badge className="bg-orange-100 text-orange-800">
                         <Clock className="w-3 h-3 mr-1" />
@@ -107,15 +153,15 @@ export default function PendingVisits() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Mail className="w-4 h-4" />
-                        {visit.email}
+                        {visit.visitor?.email || "No email provided"}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Phone className="w-4 h-4" />
-                        {visit.phone}
+                        {visit.visitor?.phone || "No phone number provided"}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Building className="w-4 h-4" />
-                        Host: {visit.hostName}
+                        Host: {visit.staffName || "Not assigned"}
                       </div>
                     </div>
 
@@ -129,15 +175,15 @@ export default function PendingVisits() {
                         <p className="text-sm text-gray-600">{visit.checkInTime}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Expected Duration</p>
-                        <p className="text-sm text-gray-600">{visit.expectedDuration}</p>
+                        <p className="text-sm font-medium text-gray-900">Check-out Time</p>
+                        <p className="text-sm text-gray-600">{visit.checkOutTime}</p>
                       </div>
                     </div>
 
-                    {visit.notes && (
+                    {visit.comments && (
                       <div className="mb-4">
                         <p className="text-sm font-medium text-gray-900 mb-1">Notes</p>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">{visit.notes}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">{visit.comments}</p>
                       </div>
                     )}
                   </div>
@@ -176,6 +222,6 @@ export default function PendingVisits() {
           )}
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }

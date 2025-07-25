@@ -13,12 +13,11 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/contact" element={<CheckIn />} />
+      <Route path="/check-in" element={<CheckIn />} />
       <Route path="/pending" element={<PendingVisits />} />
       <Route path="/staff" element={<StaffDirectory />} />
       <Route path="/tags" element={<TagManagement />} />
-      <Route path="/check-in" element={<CheckIn />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="visitors" element={<AllVisitors />} />
 
     </Routes>
