@@ -57,16 +57,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  // const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0]
-  //   if (file) {
-  //     const reader = new FileReader()
-  //     reader.onloadend = () => {
-  //       setFormData((prev) => ({ ...prev, base64Image: reader.result as string }))
-  //     }
-  //     reader.readAsDataURL(file)
-  //   }
-  // }
 
   const startCamera = () => {
     setIsCameraActive(true)

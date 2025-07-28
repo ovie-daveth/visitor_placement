@@ -1,14 +1,22 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, User, Clock, CheckCircle, XCircle, LogOut, List, LayoutGrid, Table as TableIcon } from "lucide-react"
+import { Search, User, Clock, CheckCircle, XCircle, LogOut, List, LayoutGrid, Table as TableIcon, Loader2 } from "lucide-react"
 import Layout from "../layout"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import type { PaginatedVisits, VisitorDataInterface } from "@/interfaces/visitors"
+import apiClient from "@/lib/apiConfig"
+import Pagination from '@/components/Pagination';
+import { toast } from "sonner"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 
 export default function AllVisitors() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -16,55 +24,42 @@ export default function AllVisitors() {
   const [view, setView] = useState<"grid" | "list" | "table">("grid")
   const [selectedVisitor, setSelectedVisitor] = useState<any | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [allVisits, setAllVisits] = useState<VisitorDataInterface[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [pageIndex, setPageIndex] = useState(0)
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  })
+  const [totalPages, setTotalPages] = useState(1)
 
-  const visitors = [
-    {
-      id: "V001",
-      name: "John Smith",
-      company: "Tech Corp",
-      status: "pending",
-      checkInTime: "10:30 AM",
-      hostName: "Sarah Johnson",
-      purpose: "Business Meeting",
-    },
-    {
-      id: "V002",
-      name: "Sarah Johnson",
-      company: "Design Studio",
-      status: "checked-in",
-      checkInTime: "10:15 AM",
-      hostName: "Mike Wilson",
-      purpose: "Consultation",
-    },
-    {
-      id: "V003",
-      name: "Mike Wilson",
-      company: "Marketing Inc",
-      status: "checked-out",
-      checkInTime: "09:45 AM",
-      checkOutTime: "11:30 AM",
-      hostName: "Emily Davis",
-      purpose: "Job Interview",
-    },
-    {
-      id: "V004",
-      name: "Emily Davis",
-      company: "Consulting LLC",
-      status: "rejected",
-      checkInTime: "10:45 AM",
-      hostName: "John Smith",
-      purpose: "Business Meeting",
-    },
-    {
-      id: "V005",
-      name: "Robert Brown",
-      company: "Tech Solutions",
-      status: "checked-in",
-      checkInTime: "11:00 AM",
-      hostName: "Lisa Chen",
-      purpose: "Maintenance",
-    },
-  ]
+  const GetAllVisits = async () => {
+    try {
+      setIsLoading(true)
+      const fromDate = dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''
+      const toDate = dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''
+      const response = await apiClient.get(`/visits?page=${pageIndex}&pageSize=${10}&status=${statusFilter}&search=${searchTerm}&from=${fromDate}&to=${toDate}`)
+      if (response.status === 200 || response.status === 201) {
+        console.log("Fetched visits:", response.data)
+        const paginatedVisits = response.data as PaginatedVisits<VisitorDataInterface[]>
+        setTotalPages(paginatedVisits.totalPages)
+        setAllVisits(paginatedVisits.data)
+        setIsLoading(false)
+      } else {
+        setIsLoading(false)
+        console.error("Failed to fetch visits:", response.statusText)
+        toast.error("Failed to fetch visits. Please try again later.")
+      }
+    } catch (error) {
+      setIsLoading(false)
+      console.error("Error fetching visits:", error)
+      toast.error("Failed to fetch visits. Please try again later.")
+    }
+  }
+
+  useEffect(() => {
+    GetAllVisits()
+  }, [pageIndex, statusFilter, searchTerm, dateRange.from, dateRange.to])
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -101,14 +96,18 @@ export default function AllVisitors() {
     console.log("Checking out visitor:", visitId)
   }
 
-  const filteredVisitors = visitors.filter((visitor) => {
+  const handlePageChange = (newPage: number) => {
+    setPageIndex(newPage);
+  };
+
+  const filteredVisitors = allVisits.filter((visitor) => {
     const matchesSearch =
-      visitor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      visitor.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      visitor.hostName.toLowerCase().includes(searchTerm.toLowerCase())
+      visitor.visitorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      visitor?.staffName?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || visitor.status === statusFilter
     return matchesSearch && matchesStatus
   })
+  
 
   return (
     <Layout>
@@ -135,6 +134,43 @@ export default function AllVisitors() {
               <SelectItem value="rejected">Rejected</SelectItem>
             </SelectContent>
           </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-[300px] justify-start text-left font-normal">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange.from}
+                selected={dateRange}
+                onSelect={(newDateRange) => {
+                  if (newDateRange) {
+                    setDateRange({
+                      from: newDateRange.from,
+                      to: newDateRange.to
+                    });
+                  } else {
+                    setDateRange({ from: undefined, to: undefined });
+                  }
+                }}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
           <div className="flex gap-2 items-center">
             <Button
               variant={view === "grid" ? "default" : "outline"}
@@ -189,145 +225,167 @@ export default function AllVisitors() {
           </DialogContent>
         </Dialog>
 
-        {view === "table" ? (
-          <div className="overflow-x-auto rounded-lg border">
-            <table className="min-w-full divide-y divide-gray-200 bg-white">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Host</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Purpose</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Check-in</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Check-out</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredVisitors.map((visitor) => (
-                  <tr key={visitor.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 font-medium text-gray-900">{visitor.name}</td>
-                    <td className="px-4 py-10">{visitor.company}</td>
-                    <td className="px-4 py-10">{visitor.hostName}</td>
-                    <td className="px-4 py-10">{visitor.purpose}</td>
-                    <td className="px-4 py-10">{visitor.checkInTime}</td>
-                    <td className="px-4 py-10">{visitor.checkOutTime || "-"}</td>
-                    <td className="px-4 py-10">
-                      <Badge className={`w-fit ${getStatusColor(visitor.status)}`}>
-                        {getStatusIcon(visitor.status)}
-                        <span className="ml-1 capitalize">{visitor.status.replace("-", " ")}</span>
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-10 flex gap-2">
-                      {visitor.status === "checked-in" && (
-                        <Button onClick={() => handleCheckout(visitor.id)} variant="outline" size="sm">
-                          <LogOut className="w-4 h-4 mr-2" />
-                          Check Out
-                        </Button>
-                      )}
-
-                        <Button
-                         onClick={() => {
-                          setSelectedVisitor(visitor)
-                          setDialogOpen(true)
-                      }}
-                        variant="outline" size="sm">
-                          View Details
-                        </Button>
-                    </td>
-                  </tr>
-                ))}
-                {filteredVisitors.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
-                      No visitors found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className={
-            view === "grid"
-              ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-              : "flex flex-col gap-4"
-          }>
-            {filteredVisitors.map((visitor) => (
-              <Card key={visitor.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  {/* Top section: Avatar, Name, Status */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{visitor.name}</h3>
-                        <p className="text-sm text-gray-600">{visitor.purpose}</p>
-                        <p className="text-xs text-gray-500">Host: {visitor.hostName}</p>
-                      </div>
-                    </div>
-                    <Badge className={getStatusColor(visitor.status)}>
-                      {getStatusIcon(visitor.status)}
-                      <span className="ml-1 capitalize">{visitor.status.replace("-", " ")}</span>
-                    </Badge>
-                  </div>
+          <>
+            {view === "table" ? (
+              <>
+                <div className="overflow-x-auto rounded-lg border">
+                  <table className="min-w-full divide-y divide-gray-200 bg-white">
+                    <thead>
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Host</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Purpose</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Check-in</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Check-out</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th className="px-4 py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredVisitors.map((visitor) => (
+                        <tr key={visitor.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 font-medium text-gray-900">{visitor.visitorName}</td>
+                          <td className="px-4 py-10">Tag: {visitor.purpose}</td>
+                          <td className="px-4 py-10">{visitor.staffName}</td>
+                          <td className="px-4 py-10">{visitor.purpose}</td>
+                          <td className="px-4 py-10">{visitor.checkInTime}</td>
+                          <td className="px-4 py-10">{visitor.checkOutTime || "-"}</td>
+                          <td className="px-4 py-10">
+                            <Badge className={`w-fit ${getStatusColor(visitor.status)}`}>
+                              {getStatusIcon(visitor.status)}
+                              <span className="ml-1 capitalize">{visitor.status.replace("-", " ")}</span>
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-10 flex gap-2">
+                            {visitor.status === "checked-in" && (
+                              <Button onClick={() => handleCheckout(visitor.id)} variant="outline" size="sm">
+                                <LogOut className="w-4 h-4 mr-2" />
+                                Check Out
+                              </Button>
+                            )}
 
-                  {/* Details section */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="font-medium">Company:</span> {visitor.company}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="font-medium">Check-in:</span> {visitor.checkInTime}
-                      {visitor.checkOutTime && (
-                        <>
-                          <span className="mx-2">|</span>
-                          <span className="font-medium">Check-out:</span> {visitor.checkOutTime}
-                        </>
+                              <Button
+                               onClick={() => {
+                                setSelectedVisitor(visitor)
+                                setDialogOpen(true)
+                            }}
+                              variant="outline" size="sm">
+                                View Details
+                              </Button>
+                          </td>
+                        </tr>
+                      ))}
+                      {filteredVisitors.length === 0 && (
+                        <tr>
+                          <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                            No visitors found.
+                          </td>
+                        </tr>
                       )}
-                    </div>
-                  </div>
+                    </tbody>
+                  </table>
+                </div>
+                <Pagination
+                  currentPage={pageIndex}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </>
+            ) : (
+              <>
+                <div className={
+                  view === "grid"
+                    ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                    : "flex flex-col gap-4"
+                }>
+                  {filteredVisitors.map((visitor) => (
+                    <Card key={visitor.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-6">
+                        {/* Top section: Avatar, Name, Status */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                              <User className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900">{visitor.visitorName}</h3>
+                              <p className="text-sm text-gray-600">{visitor.purpose}</p>
+                              <p className="text-xs text-gray-500">Host: {visitor.staffName}</p>
+                            </div>
+                          </div>
+                          <Badge className={getStatusColor(visitor.status)}>
+                            {getStatusIcon(visitor.status)}
+                            <span className="ml-1 capitalize">{visitor.status.replace("-", " ")}</span>
+                          </Badge>
+                        </div>
 
-                  {/* Actions */}
-                  <div className="mt-4 flex gap-2">
-                    {visitor.status === "checked-in" && (
-                      <Button onClick={() => handleCheckout(visitor.id)} variant="outline" size="sm" className="flex-1 bg-transparent">
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Check Out
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 bg-transparent"
-                      onClick={() => {
-                        setSelectedVisitor(visitor)
-                        setDialogOpen(true)
-                      }}
-                    >
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {filteredVisitors.length === 0 && (
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No visitors found</h3>
-                  <p className="text-gray-600">
-                    {searchTerm || statusFilter !== "all"
-                      ? "No visitors match your search criteria."
-                      : "No visitors have been registered yet."}
-                  </p>
-                </CardContent>
-              </Card>
+                        {/* Details section */}
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <span className="font-medium">Tag:</span> {visitor.tagNumber || "N/A"}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <span className="font-medium">Check-in:</span> {visitor.checkInTime}
+                            {visitor.checkOutTime && (
+                              <>
+                                <span className="mx-2">|</span>
+                                <span className="font-medium">Check-out:</span> {visitor.checkOutTime}
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="mt-4 flex gap-2">
+                          {visitor.status === "checked-in" && (
+                            <Button onClick={() => handleCheckout(visitor.id)} variant="outline" size="sm" className="flex-1 bg-transparent">
+                              <LogOut className="w-4 h-4 mr-2" />
+                              Check Out
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 bg-transparent"
+                            onClick={() => {
+                              setSelectedVisitor(visitor)
+                              setDialogOpen(true)
+                            }}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {filteredVisitors.length === 0 && (
+                    <Card>
+                      <CardContent className="p-12 text-center">
+                        <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No visitors found</h3>
+                        <p className="text-gray-600">
+                          {searchTerm || statusFilter !== "all" || dateRange.from || dateRange.to
+                            ? "No visitors match your search criteria."
+                            : "No visitors have been registered yet."}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+                <Pagination
+                  currentPage={pageIndex}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </>
             )}
-          </div>
+          </>
         )}
       </div>
     </Layout>

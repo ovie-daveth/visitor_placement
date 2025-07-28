@@ -17,6 +17,22 @@ export interface Visit {
   formattedVisitId?: string;
 }
 
+export interface VisitorDataInterface {
+  id: string;
+  visitorName: string;
+  staffName: string;
+  staffEmail: string;
+  status: string;
+  faceImageUrl: string;
+  purpose: string;
+  barcodeUrl: string;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  tagNumber: string | null;
+  comments: string | null;
+  formattedVisitId: string;
+}
+
 export interface Visitor {
   id: string; // Guid
   fullName: string;
@@ -25,4 +41,12 @@ export interface Visitor {
   phone: string;
   photoUrl?: string;
   visits: Visit[];
+}
+
+export interface PaginatedVisits<T> {
+  data: T;
+  total: number;
+  totalPages: number;
+  page: number;  
+  pageSize: number;
 }
