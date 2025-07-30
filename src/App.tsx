@@ -7,6 +7,8 @@ import PendingVisits from './pages/pending/page'
 import StaffDirectory from './pages/staff/page'
 import TagManagement from './pages/tags/page'
 import AllVisitors from './pages/visitors/page'
+import CheckInVisitors from './pages/check-in-visits/page'
+import CheckOutVisitors from './pages/checked-out-visits/page'
 
 function App() {
 
@@ -19,6 +21,8 @@ function App() {
       <Route path="/tags" element={<TagManagement />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="visitors" element={<AllVisitors />} />
+      <Route path="check-in-visits" element={<CheckInVisitors />} />
+      <Route path="check-out-visits" element={<CheckOutVisitors />} />
 
     </Routes>
   )

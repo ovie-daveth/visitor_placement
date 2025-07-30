@@ -103,14 +103,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     {
       title: "Checked in Visits",
-      url: "/checked-in/visits",
+      url: "/check-in-visits",
       icon: Clock,
       count: counts.Approved || 0,
       description: "Visitors currently checked in",
     },
     {
       title: "Checked out Visits",
-      url: "/checked-out",
+      url: "/check-out-visits",
       icon: Clock,
       count: counts.CheckedOut || 0,
       description: "Visitors who have checked out",

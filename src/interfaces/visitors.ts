@@ -50,3 +50,13 @@ export interface PaginatedVisits<T> {
   page: number;  
   pageSize: number;
 }
+
+export interface IvisitorWithTag {
+   id: string;
+  visitorName: string;
+  formattedVisitId: string;
+   tagNumber: string | null;
+  status: string;
+  checkInTime?: string; // DateTime serialized as ISO string
+  checkOutTime?: string;
+}

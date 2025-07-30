@@ -1,4 +1,3 @@
-"use client"
 
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -16,52 +15,12 @@ export default function PendingVisits() {
   const [pendingVisits, setPendingVisits] = useState<Visit[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // const pendingVisits = [
-  //   {
-  //     id: "V001",
-  //     name: "John Smith",
-  //     email: "john.smith@techcorp.com",
-  //     phone: "+1 (555) 123-4567",
-  //     company: "Tech Corp",
-  //     purpose: "Business Meeting",
-  //     hostName: "Sarah Johnson",
-  //     checkInTime: "10:30 AM",
-  //     expectedDuration: "2 hours",
-  //     notes: "Meeting about new project proposal",
-  //   },
-  //   {
-  //     id: "V004",
-  //     name: "Emily Davis",
-  //     email: "emily.davis@consulting.com",
-  //     phone: "+1 (555) 987-6543",
-  //     company: "Consulting LLC",
-  //     purpose: "Consultation",
-  //     hostName: "Mike Wilson",
-  //     checkInTime: "10:45 AM",
-  //     expectedDuration: "1 hour",
-  //     notes: "Strategic planning consultation",
-  //   },
-  //   {
-  //     id: "V007",
-  //     name: "Robert Brown",
-  //     email: "robert.brown@design.com",
-  //     phone: "+1 (555) 456-7890",
-  //     company: "Design Studio",
-  //     purpose: "Job Interview",
-  //     hostName: "Lisa Chen",
-  //     checkInTime: "11:15 AM",
-  //     expectedDuration: "1 hour",
-  //     notes: "Senior Designer position interview",
-  //   },
-  // ]
-
 
   useEffect(() => {
-    // Simulate fetching pending visits from an API
     const fetchPendingVisits = async () => {
       setIsLoading(true)
       try {
-        const response  = await apiClient.get("/visit/pending")
+        const response  = await apiClient.get("/reception/pending-visits")
       if(response.status === 200 || response.status === 201) {
         console.log("Pending visits fetched successfully:", response.data)
         setPendingVisits(response.data)
