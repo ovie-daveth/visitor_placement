@@ -53,7 +53,7 @@ const StaffAccept = () => {
 
   const handleApprove = async (visitorId: string) => {
     try {
-      await apiClient.post(`/staff/approve-visitor/${visitorId}`);
+      await apiClient.post(`/visit/approve/${visitorId}`);
       toast.success("Visitor approved successfully");
       setVisitors(visitors.filter(visitor => visitor.id !== visitorId));
     } catch (error) {
@@ -64,7 +64,7 @@ const StaffAccept = () => {
 
   const handleReject = async (visitorId: string) => {
     try {
-      await apiClient.post(`/staff/reject-visitor/${visitorId}`);
+      await apiClient.post(`/visit/reject/${visitorId}`);
       toast.success("Visitor rejected successfully");
       setVisitors(visitors.filter(visitor => visitor.id !== visitorId));
     } catch (error) {
