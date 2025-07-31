@@ -4,9 +4,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search, Check, X, Clock, User, Building, Phone, Mail } from "lucide-react"
+import { Search, Check, Clock, User, Building, Phone, Mail } from "lucide-react"
 import apiClient from "@/lib/apiConfig"
-import type { IPendingVisitors, Visit } from "@/interfaces/visitors"
+import type { IPendingVisitors } from "@/interfaces/visitors"
 import { toast } from "sonner"
 import Layout from "../layout"
 
@@ -37,30 +37,6 @@ export default function PendingVisits() {
     }
     fetchPendingVisits()
   }, [])
-
-  const handleApprove = async (visitId: string) => {
-   const response = await apiClient.post(`/visit/approve/${visitId}`)
-    if(response.status === 200 || response.status === 201) {
-      console.log("Visit approved successfully:", response.data)
-      toast.success("Visit approved successfully")
-      // Optionally, you can refetch the pending visits or update the state
-      setPendingVisits((prevVisits) => prevVisits.filter(visit => visit.id !== visitId))
-    } else {
-      console.error("Failed to approve visit:", response.statusText)
-    }
-  }
-
-  const handleReject = async (visitId: string) => {
-    const response = await apiClient.post(`/visit/reject/${visitId}`)
-    if(response.status === 200 || response.status === 201) {
-      console.log("Visit rejected successfully:", response.data)
-      toast.success("Visit rejected successfully")
-      // Optionally, you can refetch the pending visits or update the state
-      setPendingVisits((prevVisits) => prevVisits.filter(visit => visit.id !== visitId))
-    } else {
-      console.error("Failed to reject visit:", response.statusText)
-    }
-  }
 
   //const filteredVisits = pendingVisits.filter(
   //  (visit) =>
@@ -131,7 +107,7 @@ export default function PendingVisits() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">Check-in Time</p>
-                        <p className="text-sm text-gray-600">{visit.checkInTime}</p>
+                        <p className="text-sm text-gray-600">{new Date(visit.checkInTime).toLocaleString()}</p>
                       </div>
                      
                     </div>
@@ -145,17 +121,7 @@ export default function PendingVisits() {
                   </div>
 
                   <div className="flex flex-col gap-2 ml-6">
-                   <div className="flex items-center gap-3">
-                     <Button onClick={() => handleApprove(visit.id)} className="bg-green-600 hover:bg-green-700">
-                      <Check className="w-4 h-4 mr-2" />
-                      Approve
-                    </Button>
-                    <Button onClick={() => handleReject(visit.id)} variant="destructive">
-                      <X className="w-4 h-4 mr-2" />
-                      Reject
-                    </Button>
-                   </div>
-                    <Button onClick={() => handleApprove(visit.id)} className="bg-blue-600 hover:bg-green-700">
+                    <Button onClick={() => {}} className="bg-blue-600 hover:bg-green-700">
                       <Check className="w-4 h-4 mr-2" />
                       Send reminder mail
                     </Button>

@@ -48,6 +48,7 @@ export interface VisitorDataInterface {
   tagNumber: string | null;
   comments: string | null;
   formattedVisitId: string;
+  updatedAt: string;
 }
 
 export interface Visitor {

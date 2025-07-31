@@ -223,7 +223,7 @@ export default function CheckInVisitors() {
                   <div><b>Company:</b> {selectedVisitor.company}</div>
                   <div><b>Purpose:</b> {selectedVisitor.purpose}</div>
                   <div><b>Status:</b> <Badge className={getStatusColor(selectedVisitor.status)}>{getStatusIcon(selectedVisitor.status)} <span className="ml-1 capitalize">{selectedVisitor.status.replace("-", " ")}</span></Badge></div>
-                  <div><b>Check-in:</b> {selectedVisitor.checkInTime}</div>
+                  <div><b>Check-in:</b> {new Date(selectedVisitor.checkInTime).toLocaleString()}</div>
                   {selectedVisitor.checkOutTime && <div><b>Check-out:</b> {selectedVisitor.checkOutTime}</div>}
                 </div>
                 <DialogFooter>
@@ -258,37 +258,9 @@ export default function CheckInVisitors() {
                     </thead>
                     <tbody>
                       {filteredVisitors.map((visitor) => (
-                        <tr key={visitor.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 font-medium text-gray-900">{visitor.visitorName}</td>
-                          <td className="px-4 py-10">Tag: {visitor.purpose}</td>
-                          <td className="px-4 py-10">{visitor.staffName}</td>
-                          <td className="px-4 py-10">{visitor.purpose}</td>
-                          <td className="px-4 py-10">{visitor.checkInTime}</td>
-                          <td className="px-4 py-10">{visitor.checkOutTime || "-"}</td>
-                          <td className="px-4 py-10">
-                            <Badge className={`w-fit ${getStatusColor(visitor.status)}`}>
-                              {getStatusIcon(visitor.status)}
-                              <span className="ml-1 capitalize">{visitor.status.replace("-", " ")}</span>
-                            </Badge>
-                          </td>
-                          <td className="px-4 py-10 flex gap-2">
-                            {visitor.status === "checked-in" && (
-                              <Button onClick={() => handleCheckout(visitor.id)} variant="outline" size="sm">
-                                <LogOut className="w-4 h-4 mr-2" />
-                                Check Out
-                              </Button>
-                            )}
-
-                              <Button
-                               onClick={() => {
-                                setSelectedVisitor(visitor)
-                                setDialogOpen(true)
-                            }}
-                              variant="outline" size="sm">
-                                View Details
-                              </Button>
-                          </td>
-                        </tr>
+                        <td className="px-4 py-10">
+                          {visitor.checkInTime ? new Date(visitor.checkInTime).toLocaleString() : '-'}
+                        </td>
                       ))}
                       {filteredVisitors.length === 0 && (
                         <tr>
@@ -340,7 +312,7 @@ export default function CheckInVisitors() {
                             <span className="font-medium">Tag:</span> {visitor.tagNumber || "N/A"}
                           </div>
                           <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <span className="font-medium">Check-in:</span> {visitor.checkInTime}
+                            <span className="font-medium">Check-in:</span> {visitor.checkInTime && new Date(visitor.checkInTime).toLocaleString()}
                             {visitor.checkOutTime && (
                               <>
                                 <span className="mx-2">|</span>

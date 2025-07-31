@@ -2,19 +2,39 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Clock, Users, UserCheck, Tag } from "lucide-react"
-import {Link} from "react-router-dom"
+import { Clock, Users, Tag, Inbox } from "lucide-react"
+import { Link } from "react-router-dom"
 import Layout from "../layout"
-
+import type { PaginatedVisits, VisitorDataInterface } from "@/interfaces/visitors"
+import { useEffect, useState } from "react"
+import apiClient from "@/lib/apiConfig"
 
 export default function Dashboard() {
+  const [allVisits, setAllVisits] = useState<VisitorDataInterface[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const recentVisits = [
-    { id: "V001", name: "John Smith", company: "Tech Corp", status: "pending", time: "10:30 AM" },
-    { id: "V002", name: "Sarah Johnson", company: "Design Studio", status: "approved", time: "10:15 AM" },
-    { id: "V003", name: "Mike Wilson", company: "Marketing Inc", status: "checked-in", time: "09:45 AM" },
-    { id: "V004", name: "Emily Davis", company: "Consulting LLC", status: "pending", time: "10:45 AM" },
-  ]
+  const GetAllVisits = async () => {
+    try {
+      setIsLoading(true)
+
+      const response = await apiClient.get(`/visits`)
+
+      if (response.status === 200 || response.status === 201) {
+        const paginatedVisits = response.data as PaginatedVisits<VisitorDataInterface[]>
+        setAllVisits(paginatedVisits.data)
+      } else {
+        console.error("Failed to fetch visits:", response.statusText)
+      }
+    } catch (error) {
+      console.error("Error fetching visits:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    GetAllVisits()
+  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -32,11 +52,9 @@ export default function Dashboard() {
   }
 
   return (
-    <Layout >
-      <main className="ml-0 md:ml-48 transition-all w-[90%] mx-auto relative">
-        {/* Main Content */}
+    <Layout>
+      <main className="ml-0 transition-all relative">
         <div className="mx-auto px-0 sm:px-6 lg:px-8 py-8">
-          {/* Removed stats grid here */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left">
             <Card>
               <CardHeader>
@@ -44,27 +62,55 @@ export default function Dashboard() {
                 <CardDescription>Latest visitor activity</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentVisits.map((visit) => (
-                    <div key={visit.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
+                {isLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(5)].map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg animate-pulse">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <Users className="w-5 h-5 text-gray-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{visit.name}</p>
-                            <p className="text-sm text-gray-600">{visit.company}</p>
+                          <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                          <div className="space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                            <div className="h-3 bg-gray-200 rounded w-32"></div>
                           </div>
                         </div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-3 bg-gray-200 rounded w-20"></div>
+                          <div className="h-6 bg-gray-200 rounded w-16"></div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-500">{visit.time}</span>
-                        <Badge className={getStatusColor(visit.status)}>{visit.status}</Badge>
+                    ))}
+                  </div>
+                ) : allVisits.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Inbox className="w-12 h-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No recent visits</h3>
+                    <p className="text-sm text-gray-500">
+                      There are no recent visits to display at the moment.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {allVisits.map((visit) => (
+                      <div key={visit.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                              <Users className="w-5 h-5 text-gray-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{visit.visitorName}</p>
+                              <p className="text-sm text-gray-600">TagNumber: {visit.tagNumber}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-gray-500">{visit.updatedAt && new Date(visit.updatedAt).toLocaleString()}</span>
+                          <Badge className={getStatusColor(visit.status)}>{visit.status}</Badge>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -90,12 +136,6 @@ export default function Dashboard() {
                   <Button variant="outline" className="w-full justify-start bg-transparent">
                     <Users className="w-4 h-4 mr-2" />
                     Staff Directory
-                  </Button>
-                </Link>
-                <Link to="/reports" className="block">
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
-                    <UserCheck className="w-4 h-4 mr-2" />
-                    View Reports
                   </Button>
                 </Link>
               </CardContent>

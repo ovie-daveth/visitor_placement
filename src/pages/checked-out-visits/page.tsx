@@ -20,7 +20,7 @@ import { CalendarIcon } from "lucide-react"
 export default function CheckOutVisitors() {
   const [searchTerm, setSearchTerm] = useState("")
   const [view, setView] = useState<"grid" | "list" | "table">("grid")
-  const [selectedVisitor, setSelectedVisitor] = useState<any | null>(null)
+  const [selectedVisitor, setSelectedVisitor] = useState<VisitorDataInterface | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [allVisits, setAllVisits] = useState<VisitorDataInterface[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -190,17 +190,16 @@ export default function CheckOutVisitors() {
             {selectedVisitor && (
               <>
                 <DialogHeader>
-                  <DialogTitle>{selectedVisitor.name}</DialogTitle>
+                  <DialogTitle>{selectedVisitor.visitorName}</DialogTitle>
                   <DialogDescription>
-                    <span className="text-xs text-gray-500">Host: {selectedVisitor.hostName}</span>
+                    <span className="text-xs text-gray-500">Host: {selectedVisitor.staffName}</span>
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-2 mt-2">
-                  <div><b>Company:</b> {selectedVisitor.company}</div>
                   <div><b>Purpose:</b> {selectedVisitor.purpose}</div>
                   <div><b>Status:</b> <Badge className={getStatusColor(selectedVisitor.status)}>{getStatusIcon(selectedVisitor.status)} <span className="ml-1 capitalize">{selectedVisitor.status.replace("-", " ")}</span></Badge></div>
-                  <div><b>Check-in:</b> {selectedVisitor.checkInTime}</div>
-                  {selectedVisitor.checkOutTime && <div><b>Check-out:</b> {selectedVisitor.checkOutTime}</div>}
+                  <div><b>Check-in:</b> {selectedVisitor.checkInTime && new Date(selectedVisitor.checkInTime).toLocaleString()}</div>
+                  {selectedVisitor.checkOutTime && <div><b>Check-out:</b> {new Date(selectedVisitor.checkOutTime).toLocaleString()}</div>}
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>Close</Button>
@@ -239,8 +238,8 @@ export default function CheckOutVisitors() {
                           <td className="px-4 py-10">Tag: {visitor.purpose}</td>
                           <td className="px-4 py-10">{visitor.staffName}</td>
                           <td className="px-4 py-10">{visitor.purpose}</td>
-                          <td className="px-4 py-10">{visitor.checkInTime}</td>
-                          <td className="px-4 py-10">{visitor.checkOutTime || "-"}</td>
+                          <td className="px-4 py-10">{visitor.checkInTime && new Date(visitor.checkInTime).toLocaleString()}</td>
+                          <td className="px-4 py-10">{visitor.checkOutTime? new Date(visitor.checkOutTime).toLocaleString() : "-"}</td>
                           <td className="px-4 py-10">
                             <Badge className={`w-fit ${getStatusColor(visitor.status)}`}>
                               {getStatusIcon(visitor.status)}
@@ -316,11 +315,11 @@ export default function CheckOutVisitors() {
                             <span className="font-medium">Tag:</span> {visitor.tagNumber || "N/A"}
                           </div>
                           <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <span className="font-medium">Check-in:</span> {visitor.checkInTime}
+                            <span className="font-medium">Check-in:</span> {visitor.checkInTime &&new Date(visitor.checkInTime).toLocaleString()}
                             {visitor.checkOutTime && (
                               <>
                                 <span className="mx-2">|</span>
-                                <span className="font-medium">Check-out:</span> {visitor.checkOutTime}
+                                <span className="font-medium">Check-out:</span> {new Date(visitor.checkOutTime).toLocaleString()}
                               </>
                             )}
                           </div>
