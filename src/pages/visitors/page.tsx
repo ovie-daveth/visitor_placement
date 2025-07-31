@@ -33,29 +33,44 @@ export default function AllVisitors() {
   })
   const [totalPages, setTotalPages] = useState(1)
 
-  const GetAllVisits = async () => {
-    try {
-      setIsLoading(true)
-      const fromDate = dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''
-      const toDate = dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''
-      const response = await apiClient.get(`/visits?page=${pageIndex}&pageSize=${10}&status=${statusFilter}&search=${searchTerm}&from=${fromDate}&to=${toDate}`)
-      if (response.status === 200 || response.status === 201) {
-        console.log("Fetched visits:", response.data)
-        const paginatedVisits = response.data as PaginatedVisits<VisitorDataInterface[]>
-        setTotalPages(paginatedVisits.totalPages)
-        setAllVisits(paginatedVisits.data)
-        setIsLoading(false)
-      } else {
-        setIsLoading(false)
-        console.error("Failed to fetch visits:", response.statusText)
-        toast.error("Failed to fetch visits. Please try again later.")
-      }
-    } catch (error) {
-      setIsLoading(false)
-      console.error("Error fetching visits:", error)
+const GetAllVisits = async () => {
+  try {
+    setIsLoading(true)
+
+    const queryParams = new URLSearchParams({
+      page: pageIndex.toString(),
+      pageSize: "10",
+      status: statusFilter,
+      search: searchTerm
+    })
+
+    if (dateRange.from) {
+      queryParams.append("from", format(dateRange.from, 'yyyy-MM-dd'))
+    }
+
+    if (dateRange.to) {
+      queryParams.append("to", format(dateRange.to, 'yyyy-MM-dd'))
+    }
+
+    const response = await apiClient.get(`/visits?${queryParams.toString()}`)
+
+    if (response.status === 200 || response.status === 201) {
+      const paginatedVisits = response.data as PaginatedVisits<VisitorDataInterface[]>
+      setTotalPages(paginatedVisits.totalPages)
+      setAllVisits(paginatedVisits.data)
+    } else {
+      console.error("Failed to fetch visits:", response.statusText)
       toast.error("Failed to fetch visits. Please try again later.")
     }
+  } catch (error) {
+    console.error("Error fetching visits:", error)
+    toast.error("Failed to fetch visits. Please try again later.")
+  } finally {
+    setIsLoading(false)
   }
+}
+
+
 
   useEffect(() => {
     GetAllVisits()
@@ -100,13 +115,13 @@ export default function AllVisitors() {
     setPageIndex(newPage);
   };
 
-  const filteredVisitors = allVisits.filter((visitor) => {
-    const matchesSearch =
-      visitor.visitorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      visitor?.staffName?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || visitor.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  //const filteredVisitors = allVisits.filter((visitor) => {
+    //const matchesSearch =
+   //   visitor.visitorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    //  visitor?.staffName?.toLowerCase().includes(searchTerm.toLowerCase())
+   // const matchesStatus = statusFilter === "all" || visitor.status === statusFilter
+    //return matchesSearch && matchesStatus
+  //})
   
 
   return (
@@ -129,9 +144,9 @@ export default function AllVisitors() {
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="checked-in">Checked In</SelectItem>
-              <SelectItem value="checked-out">Checked Out</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="checkedIn">Checked In</SelectItem>
+              <SelectItem value="checkedOut">Checked Out</SelectItem>
+              <SelectItem value="checkedOut">Rejected</SelectItem>
             </SelectContent>
           </Select>
           <Popover>
@@ -248,7 +263,7 @@ export default function AllVisitors() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredVisitors.map((visitor) => (
+                      {allVisits.map((visitor) => (
                         <tr key={visitor.id} className="hover:bg-gray-50">
                           <td className="px-4 py-2 font-medium text-gray-900">{visitor.visitorName}</td>
                           <td className="px-4 py-10">Tag: {visitor.purpose}</td>
@@ -281,7 +296,7 @@ export default function AllVisitors() {
                           </td>
                         </tr>
                       ))}
-                      {filteredVisitors.length === 0 && (
+                      {allVisits.length === 0 && (
                         <tr>
                           <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
                             No visitors found.
@@ -304,7 +319,7 @@ export default function AllVisitors() {
                     ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
                     : "flex flex-col gap-4"
                 }>
-                  {filteredVisitors.map((visitor) => (
+                  {allVisits.map((visitor) => (
                     <Card key={visitor.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-6">
                         {/* Top section: Avatar, Name, Status */}
@@ -364,7 +379,7 @@ export default function AllVisitors() {
                       </CardContent>
                     </Card>
                   ))}
-                  {filteredVisitors.length === 0 && (
+                  {allVisits.length === 0 && (
                     <Card>
                       <CardContent className="p-12 text-center">
                         <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />

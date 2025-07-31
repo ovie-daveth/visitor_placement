@@ -6,13 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Search, Check, X, Clock, User, Building, Phone, Mail } from "lucide-react"
 import apiClient from "@/lib/apiConfig"
-import type { Visit } from "@/interfaces/visitors"
+import type { IPendingVisitors, Visit } from "@/interfaces/visitors"
 import { toast } from "sonner"
 import Layout from "../layout"
 
 export default function PendingVisits() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [pendingVisits, setPendingVisits] = useState<Visit[]>([])
+  const [pendingVisits, setPendingVisits] = useState<IPendingVisitors[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
 
@@ -62,10 +62,10 @@ export default function PendingVisits() {
     }
   }
 
-  const filteredVisits = pendingVisits.filter(
-    (visit) =>
-      visit.visitor?.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  //const filteredVisits = pendingVisits.filter(
+  //  (visit) =>
+     // visit.visitor?.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+  //)
 
   return (
     <Layout >
@@ -90,7 +90,7 @@ export default function PendingVisits() {
               </div>
             )
           }
-          {filteredVisits.map((visit) => (
+          {pendingVisits.map((visit) => (
             <Card key={visit.id} className="hover:shadow-md transition-shadow text-left">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
@@ -100,7 +100,7 @@ export default function PendingVisits() {
                         <User className="w-6 h-6 text-orange-600" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900">{visit.visitor?.fullName}</h3>
+                        <h3 className="text-xl font-semibold text-gray-900">{visit.visitorName}</h3>
                         <p className="text-gray-600">Tag: {visit.tagNumber}</p>
                       </div>
                       <Badge className="bg-orange-100 text-orange-800">
@@ -112,11 +112,11 @@ export default function PendingVisits() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Mail className="w-4 h-4" />
-                        {visit.visitor?.email || "No email provided"}
+                        {visit.email || "No email provided"}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Phone className="w-4 h-4" />
-                        {visit.visitor?.phone || "No phone number provided"}
+                        {visit?.phone || "No phone number provided"}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Building className="w-4 h-4" />
@@ -133,10 +133,7 @@ export default function PendingVisits() {
                         <p className="text-sm font-medium text-gray-900">Check-in Time</p>
                         <p className="text-sm text-gray-600">{visit.checkInTime}</p>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Check-out Time</p>
-                        <p className="text-sm text-gray-600">{visit.checkOutTime}</p>
-                      </div>
+                     
                     </div>
 
                     {visit.comments && (
@@ -168,7 +165,7 @@ export default function PendingVisits() {
             </Card>
           ))}
 
-          {filteredVisits.length === 0 && (
+          {pendingVisits.length === 0 && (
             <Card>
               <CardContent className="p-12 text-center">
                 <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />

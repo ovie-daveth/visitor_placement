@@ -17,6 +17,23 @@ export interface Visit {
   formattedVisitId?: string;
 }
 
+export interface IPendingVisitors {
+  id: string;
+  visitorName: string;
+  staffName: string;
+  staffEmail: string;
+  purpose: string;
+  status: string;
+  faceImageUrl: string;
+  barcodeUrl: string;
+  checkInTime: string;
+  tagNumber: string | null;
+  comments: string;
+  phone: string;
+  email: string;
+  formattedVisitId: string;
+}
+
 export interface VisitorDataInterface {
   id: string;
   visitorName: string;

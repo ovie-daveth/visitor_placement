@@ -23,7 +23,7 @@ export default function CheckIn() {
     base64Image: "",
     staffName: "",
     purpose: "",
-    status: "Checked In",
+    status: "",
     belongings: "",
     comments: "",
   })
