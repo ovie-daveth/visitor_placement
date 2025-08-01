@@ -115,13 +115,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       count: counts.CheckedOut || 0,
       description: "Visitors who have checked out",
     },
-    {
-      title: "Staff Directory",
-      url: "/staff",
-      icon: Users,
-      count: 43, // Placeholder; consider fetching dynamically
-      description: "View staff members",
-    },
+    // {
+    //   title: "Staff Directory",
+    //   url: "/staff",
+    //   icon: Users,
+    //   count: 43, // Placeholder; consider fetching dynamically
+    //   description: "View staff members",
+    // },
     {
       title: "Tags",
       url: "/tags",

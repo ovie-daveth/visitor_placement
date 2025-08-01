@@ -55,7 +55,7 @@ const StaffAccept = () => {
     try {
       await apiClient.post(`/visit/approve/${visitorId}`);
       toast.success("Visitor approved successfully");
-      setVisitors(visitors.filter(visitor => visitor.id !== visitorId));
+      window.location.reload()
     } catch (error) {
       console.error("Error approving visitor:", error);
       toast.error("Failed to approve visitor");
@@ -66,7 +66,7 @@ const StaffAccept = () => {
     try {
       await apiClient.post(`/visit/reject/${visitorId}`);
       toast.success("Visitor rejected successfully");
-      setVisitors(visitors.filter(visitor => visitor.id !== visitorId));
+      window.location.reload()
     } catch (error) {
       console.error("Error rejecting visitor:", error);
       toast.error("Failed to reject visitor");

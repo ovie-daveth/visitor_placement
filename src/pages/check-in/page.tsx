@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useRef, useState, useCallback } from "react"
+import { useRef, useState, useCallback, useEffect } from "react"
 import Webcam from "react-webcam"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -31,10 +31,46 @@ export default function CheckIn() {
   const webcamRef = useRef<Webcam>(null)
   const [isCameraActive, setIsCameraActive] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [staffList, setStaffList] = useState<Array<{ value: string; label: string }>>([])
+  const [searchTerm, setSearchTerm] = useState("")
 
+
+  const fetchStaffList = async (search: string) => {
+  try {
+    const response = await apiClient.get(`/staff/search?name=${search}`) // Adjust this endpoint as per your API
+    const staffData = response.data.map((staff: any) => ({
+      value: staff.id,
+      label: staff.name
+    }))
+    setStaffList(staffData)
+  } catch (error) {
+    console.error('Failed to fetch staff list:', error)
+  }
+}
+
+// Add this debounce function
+const debounce = (func: (...args: any[]) => void, delay: number) => {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+};
+
+const debouncedFetchStaffList = useCallback(
+  debounce((search: string) => {
+    fetchStaffList(search);
+  }, 300),
+  []
+);
+
+useEffect(() => {
+  debouncedFetchStaffList(searchTerm);
+}, [searchTerm, debouncedFetchStaffList]);
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+  console.log("Checking in visitor:", formData)
   setIsLoading(true)
   try {
      console.log("Checking in visitor:", formData)
@@ -70,7 +106,8 @@ const handleSubmit = async (e: React.FormEvent) => {
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot()
       if (imageSrc) {
-        setFormData((prev) => ({ ...prev, base64Image: imageSrc }))
+        const base64String = imageSrc.replace(/^data:image\/[^;]+;base64,/, "")
+        setFormData((prev) => ({ ...prev, base64Image: base64String }))
         stopCamera()
       }
     }
@@ -156,13 +193,27 @@ const handleSubmit = async (e: React.FormEvent) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="staffName">Staff Name *</Label>
-                      <Input
-                        id="staffName"
-                        value={formData.staffName}
-                        onChange={(e) => handleInputChange("staffName", e.target.value)}
-                        placeholder="Enter staff name"
+                      <Select
+                        onValueChange={(value) => handleInputChange("staffName", value)}
                         required
-                      />
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Search for staff..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <div className="mb-2">
+                            <Input
+                              placeholder="Search staff..."
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                          </div>
+                          {staffList.map((staff) => (
+                            <SelectItem key={staff.value} value={staff.value}>
+                              {staff.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                    <div className="space-y-2">
                     <Label htmlFor="belongings">Belongings</Label>

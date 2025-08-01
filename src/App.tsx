@@ -4,7 +4,6 @@ import Home from './pages/page'
 import Dashboard from './pages/dashboard/page'
 import CheckIn from './pages/check-in/page'
 import PendingVisits from './pages/pending/page'
-import StaffDirectory from './pages/staff/page'
 import TagManagement from './pages/tags/page'
 import AllVisitors from './pages/visitors/page'
 import CheckInVisitors from './pages/check-in-visits/page'
@@ -18,7 +17,6 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/check-in" element={<CheckIn />} />
       <Route path="/pending" element={<PendingVisits />} />
-      <Route path="/staff" element={<StaffDirectory />} />
       <Route path="/tags" element={<TagManagement />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/visitors" element={<AllVisitors />} />
