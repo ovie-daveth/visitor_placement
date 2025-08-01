@@ -74,8 +74,7 @@ const StaffAccept = () => {
   };
 
   return (
-    <Layout>
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-[90%] mx-auto">
        <div className='mb-6'>
             <h1 className="text-2xl font-bold ">Hey {visitors[0]?.staffName}</h1>
             <p>You have {visitors.length < 2 ? "a" : "some"} visitors</p>
@@ -138,7 +137,6 @@ const StaffAccept = () => {
           </div>
         )}
       </div>
-    </Layout>
   )
 }
 
