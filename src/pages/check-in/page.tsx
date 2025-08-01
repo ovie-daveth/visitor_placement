@@ -14,6 +14,11 @@ import {Link} from "react-router-dom"
 import apiClient from "@/lib/apiConfig"
 import Layout from "../layout"
 
+interface Istaff  {
+  fullName: string;
+  email: string;
+  department: string;
+}
 export default function CheckIn() {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -35,12 +40,12 @@ export default function CheckIn() {
   const [searchTerm, setSearchTerm] = useState("")
 
 
-  const fetchStaffList = async (search: string) => {
+const fetchStaffList = async (search: string) => {
   try {
-    const response = await apiClient.get(`/staff/search?name=${search}`) // Adjust this endpoint as per your API
-    const staffData = response.data.map((staff: any) => ({
-      value: staff.id,
-      label: staff.name
+    const response = await apiClient.get(`/staff/search?name=${search}`)
+    const staffData = response.data.map((staff: Istaff) => ({
+      value: staff.email, // Using email as the unique identifier
+      label: `${staff.fullName} (${staff.department})` // Including department for better identification
     }))
     setStaffList(staffData)
   } catch (error) {
@@ -89,9 +94,19 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+const handleInputChange = (field: string, value: string) => {
+  if (field === "staffName") {
+    const selectedStaff = staffList.find(staff => staff.value === value)
+    if (selectedStaff) {
+      setFormData(prev => ({
+        ...prev,
+        staffName: selectedStaff.label.split(' (')[0],
+      }))
+    }
+  } else {
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
+}
 
 
   const startCamera = () => {
@@ -193,7 +208,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="staffName">Staff Name *</Label>
-                      <Select
+                     <Select
                         onValueChange={(value) => handleInputChange("staffName", value)}
                         required
                       >
