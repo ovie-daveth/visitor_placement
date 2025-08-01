@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import Layout from "../layout"
 import { Button } from "@/components/ui/button"
 import { Check, X } from "lucide-react"
 import { toast } from "sonner"

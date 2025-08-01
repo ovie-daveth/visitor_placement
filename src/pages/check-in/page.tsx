@@ -38,6 +38,7 @@ export default function CheckIn() {
   const [isLoading, setIsLoading] = useState(false)
   const [staffList, setStaffList] = useState<Array<{ value: string; label: string }>>([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [displayImg, setDisplayImg] = useState("")
 
 
 const fetchStaffList = async (search: string) => {
@@ -121,7 +122,10 @@ const handleInputChange = (field: string, value: string) => {
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot()
       if (imageSrc) {
+        console.log("img", imageSrc)
+        setDisplayImg(imageSrc)
         const base64String = imageSrc.replace(/^data:image\/[^;]+;base64,/, "")
+        console.log("base64String", base64String)
         setFormData((prev) => ({ ...prev, base64Image: base64String }))
         stopCamera()
       }
@@ -218,6 +222,7 @@ const handleInputChange = (field: string, value: string) => {
                         <SelectContent>
                           <div className="mb-2">
                             <Input
+                            required={false}
                               placeholder="Search staff..."
                               onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -265,14 +270,14 @@ const handleInputChange = (field: string, value: string) => {
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     {formData.base64Image && (
                       <div>
-                        <img src={formData.base64Image} alt="Visitor" className="mx-auto mb-4 max-w-full h-auto" />
+                        <img src={displayImg} alt="Visitor" className="mx-auto mb-4 max-w-full h-auto" />
                         <Button type="button" onClick={() => setFormData(prev => ({ ...prev, base64Image: "" }))} variant="outline" className="mt-2">
                           Remove Photo
                         </Button>
                       </div>
                     )}
                     <p className="text-sm text-gray-600 mb-4">
-                      {formData.base64Image ? "Photo captured" : "No photo captured"}
+                      {displayImg ? "Photo captured" : "No photo captured"}
                     </p>
                     <div className="space-y-2">
                       <Button type="button" onClick={startCamera} className="w-full">
