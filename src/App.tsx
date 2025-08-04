@@ -9,6 +9,7 @@ import AllVisitors from './pages/visitors/page'
 import CheckInVisitors from './pages/check-in-visits/page'
 import CheckOutVisitors from './pages/checked-out-visits/page'
 import StaffAccept from './pages/staff-accept/page'
+import { Toaster } from './components/ui/sonner'
 
 function App() {
 
@@ -23,7 +24,10 @@ function App() {
       <Route path="/check-in-visits" element={<CheckInVisitors />} />
       <Route path="/check-out-visits" element={<CheckOutVisitors />} />
       <Route path="/staff-accept" element={<StaffAccept />} />
+      <Toaster
+      position="top-center"
 
+      />
     </Routes>
   )
 }
