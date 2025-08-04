@@ -20,25 +20,27 @@ interface Istaff  {
   department: string;
 }
 export default function CheckIn() {
-  const [formData, setFormData] = useState({
-    fullName: "",
-    address: "",
-    phone: "",
-    email: "",
-    base64Image: "",
-    staffName: "",
-    purpose: "",
-    status: "",
-    belongings: "",
-    comments: "",
-  })
+const [formData, setFormData] = useState({
+  fullName: "",
+  address: "",
+  phone: "",
+  email: "",
+  base64Image: "",        // Clean for backend
+  base64ImagePreview: "", // For preview only
+  staffEmail: "", // ✅ Add this
+  staffName: "",
+  purpose: "",
+  status: "",
+  belongings: "",
+  comments: "",
+})
+
 
   const webcamRef = useRef<Webcam>(null)
   const [isCameraActive, setIsCameraActive] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [staffList, setStaffList] = useState<Array<{ value: string; label: string }>>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [displayImg, setDisplayImg] = useState("")
 
 
 const fetchStaffList = async (search: string) => {
@@ -102,6 +104,7 @@ const handleInputChange = (field: string, value: string) => {
       setFormData(prev => ({
         ...prev,
         staffName: selectedStaff.label.split(' (')[0],
+        staffEmail: selectedStaff.value, // ✅ Capture the email!
       }))
     }
   } else {
@@ -118,31 +121,33 @@ const handleInputChange = (field: string, value: string) => {
     setIsCameraActive(false)
   }
 
-  const capturePhoto = useCallback(() => {
-    if (webcamRef.current) {
-      const imageSrc = webcamRef.current.getScreenshot()
-      if (imageSrc) {
-        console.log("img", imageSrc)
-        setDisplayImg(imageSrc)
-        const base64String = imageSrc.replace(/^data:image\/[^;]+;base64,/, "")
-        console.log("base64String", base64String)
-        setFormData((prev) => ({ ...prev, base64Image: base64String }))
-        stopCamera()
-      }
+const capturePhoto = useCallback(() => {
+  if (webcamRef.current) {
+    const imageSrc = webcamRef.current.getScreenshot()
+    if (imageSrc) {
+      const cleanedBase64 = imageSrc.replace(/^data:image\/\w+;base64,/, "")
+      setFormData((prev) => ({
+        ...prev,
+        base64Image: cleanedBase64,           // Send this to backend
+        base64ImagePreview: imageSrc,         // Use this for <img />
+      }))
+      stopCamera()
     }
-  }, [webcamRef])
+  }
+}, [])
 
-  return (
-    <Layout>
-       <div className="text-left">
+return (
+  <Layout>
+    <div className="text-left">
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Visitor Information Form */}
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="lg:text-2xl text-lg font-bold">Visitor Information</CardTitle>
-                  <CardDescription className="">Please fill in the visitor details</CardDescription>
+                  <CardDescription>Please fill in the visitor details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -208,21 +213,17 @@ const handleInputChange = (field: string, value: string) => {
                       </SelectContent>
                     </Select>
                   </div>
-              
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="staffName">Staff Name *</Label>
-                     <Select
-                        onValueChange={(value) => handleInputChange("staffName", value)}
-                        required
-                      >
+                      <Select onValueChange={(value) => handleInputChange("staffName", value)} required>
                         <SelectTrigger>
                           <SelectValue placeholder="Search for staff..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <div className="mb-2">
+                          <div className="mb-2 px-2">
                             <Input
-                            required={false}
                               placeholder="Search staff..."
                               onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -235,17 +236,17 @@ const handleInputChange = (field: string, value: string) => {
                         </SelectContent>
                       </Select>
                     </div>
-                   <div className="space-y-2">
-                    <Label htmlFor="belongings">Belongings</Label>
-                    <Input
-                      id="belongings"
-                      value={formData.belongings}
-                      onChange={(e) => handleInputChange("belongings", e.target.value)}
-                      placeholder="List any belongings"
-                    />
+                    <div className="space-y-2">
+                      <Label htmlFor="belongings">Belongings</Label>
+                      <Input
+                        id="belongings"
+                        value={formData.belongings}
+                        onChange={(e) => handleInputChange("belongings", e.target.value)}
+                        placeholder="List any belongings"
+                      />
+                    </div>
                   </div>
 
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="comments">Additional Comments</Label>
                     <Textarea
@@ -260,7 +261,9 @@ const handleInputChange = (field: string, value: string) => {
               </Card>
             </div>
 
+            {/* Visitor Photo and Actions */}
             <div className="space-y-6">
+              {/* Photo Section */}
               <Card>
                 <CardHeader>
                   <CardTitle className="lg:text-2xl text-lg font-bold">Visitor Photo</CardTitle>
@@ -270,41 +273,35 @@ const handleInputChange = (field: string, value: string) => {
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     {formData.base64Image && (
                       <div>
-                        <img src={displayImg} alt="Visitor" className="mx-auto mb-4 max-w-full h-auto" />
-                        <Button type="button" onClick={() => setFormData(prev => ({ ...prev, base64Image: "" }))} variant="outline" className="mt-2">
+                        <img
+                          src={`data:image/jpeg;base64,${formData.base64Image}`}
+                          alt="Visitor"
+                          className="mx-auto mb-4 max-w-full h-auto"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, base64Image: "" }))}
+                          variant="outline"
+                          className="mt-2"
+                        >
                           Remove Photo
                         </Button>
                       </div>
                     )}
                     <p className="text-sm text-gray-600 mb-4">
-                      {displayImg ? "Photo captured" : "No photo captured"}
+                      {formData.base64Image ? "Photo captured" : "No photo captured"}
                     </p>
                     <div className="space-y-2">
                       <Button type="button" onClick={startCamera} className="w-full">
                         <Camera className="w-4 h-4 mr-2" />
                         Start Camera
                       </Button>
-                      {/* <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full bg-transparent"
-                        onClick={() => document.getElementById('upload-photo')?.click()}
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload Photo
-                      </Button>
-                      <input
-                        id="upload-photo"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageUpload}
-                      /> */}
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
+              {/* Camera Modal */}
               {isCameraActive && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                   <div className="bg-white rounded-lg p-6 max-w-lg w-full">
@@ -319,28 +316,29 @@ const handleInputChange = (field: string, value: string) => {
                       ref={webcamRef}
                       screenshotFormat="image/jpeg"
                       width="100%"
-                      videoConstraints={{
-                        facingMode: "user",
-                      }}
+                      videoConstraints={{ facingMode: "user" }}
                       className="mb-4"
                     />
                     <div className="space-y-2">
-                      <Button type="button" onClick={capturePhoto} className="w-full">Take Photo</Button>
-                      <Button type="button" onClick={stopCamera} variant="outline" className="w-full">Cancel</Button>
+                      <Button type="button" onClick={capturePhoto} className="w-full">
+                        Take Photo
+                      </Button>
+                      <Button type="button" onClick={stopCamera} variant="outline" className="w-full">
+                        Cancel
+                      </Button>
                     </div>
                   </div>
                 </div>
               )}
 
+              {/* Submit Buttons */}
               <Card>
                 <CardHeader>
                   <CardTitle>Check-in Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Button type="submit" className="w-full bg-red-600" size="lg">
-                   {
-                    isLoading ? "Checking in..." : "Complete Check-in" 
-                   }
+                    {isLoading ? "Checking in..." : "Complete Check-in"}
                   </Button>
                   <Button type="button" variant="outline" className="w-full bg-transparent">
                     Save as Draft
@@ -356,7 +354,7 @@ const handleInputChange = (field: string, value: string) => {
           </div>
         </form>
       </div>
-       </div>
-    </Layout>
-  )
+    </div>
+  </Layout>
+)
 }
