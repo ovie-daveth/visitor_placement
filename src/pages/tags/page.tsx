@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Tag } from "lucide-react"
 import Layout from "../layout"
 import apiClient from "@/lib/apiConfig"
-import type { IvisitorWithTag, Visit } from "@/interfaces/visitors"
+import type { IPendingVisitors, IvisitorWithTag } from "@/interfaces/visitors"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Check, ChevronsUpDown } from "lucide-react"
@@ -36,7 +36,7 @@ const getStatusColor = (status: string) => {
 export default function TagManagement() {
   const [assignTag, setAssignTag] = useState({ visitId: "", tagId: "" })
   const [nextAvailableTag, setNextAvailableTag] = useState(1)
-  const [pendingVisits, setPendingVisits] = useState<Visit[]>([])
+  const [pendingVisits, setPendingVisits] = useState<IPendingVisitors[]>([])
   const [visitorsWithTags, setVisitorsWithTags] = useState<IvisitorWithTag[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [open, setOpen] = useState(false)
@@ -238,7 +238,7 @@ export default function TagManagement() {
                             className="w-full justify-between"
                           >
                             {assignTag.visitId
-                              ? pendingVisits.find((visit) => visit.id === assignTag.visitId)?.visitor?.fullName
+                              ? pendingVisits.find((visit) => visit.id === assignTag.visitId)?.visitorName
                               : "Select visitor..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -254,7 +254,7 @@ export default function TagManagement() {
                             <CommandGroup>
                               {pendingVisits
                                 .filter((visit) =>
-                                  visit.visitor?.fullName.toLowerCase().includes(searchValue.toLowerCase())
+                                  visit.visitorName?.toLowerCase().includes(searchValue.toLowerCase())
                                 )
                                 .map((visit) => (
                                   <CommandItem
@@ -274,10 +274,10 @@ export default function TagManagement() {
                                     <div className="flex items-center gap-2">
                                       <img
                                         src={visit.faceImageUrl}
-                                        alt={visit.visitor?.fullName}
+                                        alt={visit.visitorName}
                                         className="w-5 h-5 rounded-full"
                                       />
-                                      {visit.visitor?.fullName}
+                                      {visit.visitorName}
                                     </div>
                                   </CommandItem>
                                 ))}
