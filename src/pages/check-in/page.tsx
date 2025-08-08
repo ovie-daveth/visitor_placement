@@ -217,7 +217,7 @@ return (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="staffName">Staff Name *</Label>
-                      <Select onValueChange={(value) => handleInputChange("staffName", value)} required>
+                      {/* <Select onValueChange={(value) => handleInputChange("staffName", value)} required>
                         <SelectTrigger>
                           <SelectValue placeholder="Search for staff..." />
                         </SelectTrigger>
@@ -234,7 +234,25 @@ return (
                             </SelectItem>
                           ))}
                         </SelectContent>
-                      </Select>
+                      </Select> */}
+                      <Select onValueChange={(value) => handleInputChange("staffName", value)} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Search for staff..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <div className="mb-2 px-2">
+                            <Input
+                              placeholder="Search staff..."
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                          </div>
+                        {staffList.map((staff) => (
+                          <SelectItem key={staff.value} value={staff.value}>
+                            {staff.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="belongings">Belongings</Label>
