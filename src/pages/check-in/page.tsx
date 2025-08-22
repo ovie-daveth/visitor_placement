@@ -13,6 +13,7 @@ import { Camera, X } from "lucide-react"
 import {Link} from "react-router-dom"
 import apiClient from "@/lib/apiConfig"
 import Layout from "../layout"
+import { toast } from "sonner"
 
 interface Istaff  {
   fullName: string;
@@ -46,10 +47,12 @@ const [formData, setFormData] = useState({
 const fetchStaffList = async (search: string) => {
   try {
     const response = await apiClient.get(`/staff/search?name=${search}`)
-    const staffData = response.data.map((staff: Istaff) => ({
-      value: staff.email, // Using email as the unique identifier
-      label: `${staff.fullName} (${staff.department})` // Including department for better identification
-    }))
+    const staffData = response.data
+      .filter((staff: Istaff) => staff.email) // Filter out staff with empty emails
+      .map((staff: Istaff) => ({
+        value: staff.email,
+        label: `${staff.fullName} (${staff.department})`
+      }))
     setStaffList(staffData)
   } catch (error) {
     console.error('Failed to fetch staff list:', error)
@@ -86,8 +89,8 @@ const handleSubmit = async (e: React.FormEvent) => {
     console.log('Check-in successful:', response.data);
     if (response.status === 201 || response.status === 200) {
       setIsLoading(false)
-      alert("Visitor checked-in successfully!")
-      // Reset form or redirect
+      toast.success("Succesful, waiting for staff to accept the visit.")
+      window.location.reload()
     }
     // Optionally reset form or redirect
   } catch (error: any) {
@@ -239,17 +242,19 @@ return (
                       <SelectTrigger>
                         <SelectValue placeholder="Search for staff..." />
                       </SelectTrigger>
-                      <SelectContent>
+                     <SelectContent>
                         <div className="mb-2 px-2">
-                            <Input
-                              placeholder="Search staff..."
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                          </div>
+                          <Input
+                            placeholder="Search staff..."
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </div>
                         {staffList.map((staff) => (
-                          <SelectItem key={staff.value} value={staff.value}>
-                            {staff.label}
-                          </SelectItem>
+                          staff.value && ( // Only render if value is not empty
+                            <SelectItem key={staff.value} value={staff.value}>
+                              {staff.label}
+                            </SelectItem>
+                          )
                         ))}
                       </SelectContent>
                     </Select>
@@ -357,9 +362,6 @@ return (
                 <CardContent className="space-y-4">
                   <Button type="submit" className="w-full bg-red-600" size="lg">
                     {isLoading ? "Checking in..." : "Complete Check-in"}
-                  </Button>
-                  <Button type="button" variant="outline" className="w-full bg-transparent">
-                    Save as Draft
                   </Button>
                   <Link to="/" className="block">
                     <Button type="button" variant="ghost" className="w-full">

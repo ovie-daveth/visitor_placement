@@ -36,7 +36,13 @@ export default function CheckOutVisitors() {
       setIsLoading(true)
       const fromDate = dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''
       const toDate = dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''
-      const response = await apiClient.get(`/visits?page=${pageIndex}&pageSize=${10}&status=$"CheckedOut"&search=${searchTerm}&from=${fromDate}&to=${toDate}`)
+
+       var response;
+       
+      if(fromDate && toDate) {
+        response = await apiClient.get(`/visits?page=${pageIndex}&pageSize=${10}&status=CheckedOut&search=${searchTerm}&from=${fromDate}&to=${toDate}`)
+      }
+      response = await apiClient.get(`/visits?page=${pageIndex}&pageSize=${10}&status=CheckedOut&search=${searchTerm}`)
       if (response.status === 200 || response.status === 201) {
         console.log("Fetched visits:", response.data)
         const paginatedVisits = response.data as PaginatedVisits<VisitorDataInterface[]>
